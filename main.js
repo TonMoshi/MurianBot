@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const setting = require('./secret.json')
 
 const messages = require('./controller/messages')
 
@@ -15,4 +16,4 @@ client.on('message', msg => {
   }
 });
 
-client.login('NjIyODA5NzUwMTUyNjc1MzM4.XX5U5g.zEvJuXY-KD-20qBRnWg0pIGC7NY');
+client.login(setting.token);
