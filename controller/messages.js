@@ -18,28 +18,28 @@ var helpList = "Commands:\n !ping\n !pong\n !urlAvatar\n !testAttachment\n !test
 // Entry point for every command (Preceded by "!")
 messages.command = function(message){
     
-    switch (message.content) {
-        case "!ping":
+    switch (message.content.substring(1)) {
+        case "ping":
             ping(message);
             break;
 
-        case "!pong":
+        case "pong":
             pong(message);
             break;
 
-        case "!help":
+        case "help":
             help(message);
             break;   
         
-        case "!urlAvatar":
+        case "urlAvatar":
             getUrlAvatar(message);
             break;
 
-        case "!testAttachment":
+        case "testAttachment":
             testAttachment(message);
             break;
 
-        case "!testAttachmentWithComment":
+        case "testAttachmentWithComment":
             testAttachmentWithComment(message);
             break;
 
