@@ -1,11 +1,60 @@
 // Discord imports
-const { Attachment } = require('discord.js');
+const { Client, Attachment } = require('discord.js');
+const client = new Client();
+const setting = require('../secret.json')
 
 // Native Imports
 const fs = require('fs');
 
-// Messages object we want to export
-var messages = {}
+
+// Discord object we want to export
+var discord = {}
+
+// The Guild object, for easy access.
+var guild = {};
+var botChannel = {};
+
+// Discord bot init
+discord.start = function(){
+
+    var mode = setting.mode || "prod";
+    var token;
+    var marker;
+
+    if (mode == "dev") {
+        token = setting.tokenTest;
+        marker = "$";
+    }
+    else {
+        token = setting.token;
+        marker = "!";
+    }
+
+    console.log(token);
+
+    client.on('ready', () => {
+        console.log(`Logged in as ${client.user.tag}!`);
+        guild = client.guilds.get('119087736773804032');
+        botChannel = guild.channels.find(ch => ch.name === 'murian-cave');
+        //TODO: check if available
+        if (!guild.available){
+            
+        }
+
+
+    });
+
+    client.on('message', msg => {
+        if (msg.content[0] === marker) {
+            this.command(msg);
+        } else {
+            this.other(msg);
+        }
+    });
+
+    client.login(token);
+
+}
 
 let commands = [
     "pong",
@@ -16,7 +65,7 @@ let commands = [
 var helpList = "Commands:\n !ping\n !pong\n !urlAvatar\n !testAttachment\n !testAttachmentWithComment\n !help\n";
 
 // Entry point for every command (Preceded by "!")
-messages.command = function(message){
+discord.command = function(message){
     
     switch (message.content.substring(1)) {
         case "ping":
@@ -42,6 +91,10 @@ messages.command = function(message){
         case "testAttachmentWithComment":
             testAttachmentWithComment(message);
             break;
+            
+        case "test":
+            test();
+            break;
 
         default:
             break;
@@ -50,10 +103,17 @@ messages.command = function(message){
 }
 
 // Entry point for messages that are not commands (Preceded by "!")
-messages.other = function(message){
+discord.other = function(message){
     if(message.content) {
         
             }
+}
+
+// Send the Damages from Monster Hunter Mod to Discord
+discord.monHunDamages = function(info, callback){
+    console.log(info)
+    botChannel.send(info.damage);
+    callback(true);
 }
 
 // Reply to the user who used the command
@@ -116,4 +176,10 @@ function help(command){
     command.channel.send(helpList);
 }
 
-module.exports = messages;
+function test(){
+    //console.log(guild.channels.find(ch => ch.name === 'murian-cave'));
+    //console.log(client.guilds.get('119087736773804032').channels);
+    botChannel.send("Tasty");
+}
+
+module.exports = discord;

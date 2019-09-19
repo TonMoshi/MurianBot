@@ -1,34 +1,27 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const setting = require('./secret.json')
 
-const messages = require('./controller/messages')
+const express = require("express");
+const app = express();
 
-var mode = setting.mode || "prod";
-var token;
-var marker;
+var bodyParser = require('body-parser')
 
-if (mode == "dev") {
-    token = setting.tokenTest;
-    marker = "$";
-}
-else {
-    token = setting.token;
-    marker = "!";
-}
+var router = require('./router/monhun.js');
 
-console.log(token);
+const discord = require('./controller/discord.js')
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+discord.start();
+
+var port = 8080;
+
+app.use(bodyParser.json());
+app.use('/discord', router)
+
+
+/*
+app.get("/", (req, res) => {
+  res.send('Wiki home page');
 });
+*/
 
-client.on('message', msg => {
-  if (msg.content[0] === marker) {
-    messages.command(msg);
-  } else {
-    messages.other(msg);
-  }
-});
-
-client.login(token);
+app.listen(3000, () => {
+  console.log("El servidor está inicializado en el puerto 3000");
+ });
