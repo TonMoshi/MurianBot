@@ -56,7 +56,7 @@ discord.start = function(){
 
 }
 
-let commands = [
+let commandsList = [
     "pong",
     "ping",
     ""
@@ -65,41 +65,37 @@ let commands = [
 var helpList = "Commands:\n !ping\n !pong\n !urlAvatar\n !testAttachment\n !testAttachmentWithComment\n !help\n";
 
 // Entry point for every command (Preceded by "!")
-discord.command = function(message){
+discord.command = function(message) {
     
-    switch (message.content.substring(1)) {
-        case "ping":
-            ping(message);
-            break;
-
-        case "pong":
-            pong(message);
-            break;
-
-        case "help":
-            help(message);
-            break;   
-        
-        case "urlAvatar":
-            getUrlAvatar(message);
-            break;
-
-        case "testAttachment":
-            testAttachment(message);
-            break;
-
-        case "testAttachmentWithComment":
-            testAttachmentWithComment(message);
-            break;
-            
-        case "test":
-            test();
-            break;
-
-        default:
-            break;
+    const command = this.commands[message.content.substring(1)];
+    if (command) {
+        command(message);
     }
+}
 
+const commands =
+{
+    ping: function (message) {
+        this.ping(message);
+    },
+    pong: function (message) {
+        this.pong(message);
+    },
+    help: function (message) {
+        help(message);
+    },
+    urlAvatar: function (message) {
+        getUrlAvatar(message);
+    },
+    testAttachment: function (message) {
+        testAttachment(message);
+    },
+    testAttachmentWithComment: function (directive) {
+        testAttachmentWithComment(message);
+    },
+    test: function (directive) {
+        this.test()
+    }
 }
 
 // Entry point for messages that are not commands (Preceded by "!")
