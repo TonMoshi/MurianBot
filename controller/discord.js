@@ -110,7 +110,8 @@ function waitForReactions(filter, message, options, member, roleList) {
         }
     })
     .catch(collected => {
-        message.reply('Cómo pasa el tiempo! Si quieres solicitar tus permisos adicionales puedes volver a pedírmelos en el canal de texto #info escribiendo ```!permisos```');
+        member.addRole(roleList[0]);
+        message.reply('Cómo pasa el tiempo!\n Si quieres solicitar tus permisos de nuevo puedes volver a pedírmelos en el canal de texto #info escribiendo ```!permisos```');
     });
 }
 
