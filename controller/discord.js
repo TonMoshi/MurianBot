@@ -14,60 +14,110 @@ var discord = {}
 var guild = {};
 var botChannel = {};
 
+// Discord config.
+var mode;
+var token;
+var marker;
+
+// Discord roles.
+const roles = setting.roles;
+
 // Discord bot init
-discord.start = function(){
+discord.start = function() {
 
-    var mode = setting.mode || "prod";
-    var token;
-    var marker;
-
-    if (mode == "dev") {
-        token = setting.tokenTest;
-        marker = "$";
-    }
-    else {
-        token = setting.token;
-        marker = "!";
-    }
-
-    console.log(token);
-
-    client.on('ready', () => {
-        console.log(`Logged in as ${client.user.tag}!`);
-        guild = client.guilds.get('119087736773804032');
-        botChannel = guild.channels.find(ch => ch.name === 'murian-cave');
-        //TODO: check if available
-        if (!guild.available){
-            
-        }
-
-
-    });
-
-    client.on('message', msg => {
-        if (msg.content[0] === marker) {
-            this.command(msg);
-        } else {
-            this.other(msg);
-        }
-    });
+    setOptions();
+    onReady();
+    onMessage();
+    onGuildMemberAdd();    
 
     client.login(token);
 
 }
 
-let commandsList = [
-    "pong",
-    "ping",
-    ""
-]
+function setOptions() {
+    mode = (setting.mode) ? setting.mode : "prod";
+    token = (mode === 'dev') ? setting.tokenTest : setting.token;
+    marker = (mode === 'dev') ? '$' : '!';
 
-var helpList = "Commands:\n !ping\n !pong\n !urlAvatar\n !testAttachment\n !testAttachmentWithComment\n !help\n";
+    console.log('Token: ' + token + '\nMode: ' + mode + '\nMarker: ' + marker);
+
+}
+
+function onReady() {
+    client.on('ready', () => {
+        console.log(`Logged in as ${client.user.tag}!`);
+        guild = client.guilds.get(setting.guildId);
+        botChannel = guild.channels.find(ch => ch.name === setting.botChannel);
+        //TODO: check if available
+        if (!guild.available){
+            
+        }
+    });
+}
+
+function onMessage() {
+    client.on('message', msg => {
+        if (msg.content[0] === marker) {
+            discord.command(msg);
+        } else {
+            discord.other(msg);
+        }
+    });
+}
+
+function onGuildMemberAdd() {
+    client.on('guildMemberAdd', member => {
+        promptPermissions(member);
+    });
+}
+
+function promptPermissions(command) {
+
+    const basic = command.guild.roles.find(role => role.name === roles.base);
+    const adv = command.guild.roles.find(role => role.name === roles.advanced);
+
+    const roleList = [basic, adv];
+;
+    command.send("Te doy la bienvenida al servidor.\n¿Quieres tener acceso a los canales de desarrollo?\n En caso afirmativo, reacciona a este mensaje con \:jigsaw:, si no, reacciona con \:video_game:")
+    .then(message => {
+
+        const options = ['🎮', '🧩'];
+
+        message.react(options[1]).then(() => message.react(options[0]));
+
+        const filter = (reaction, user) => {
+            return options.includes(reaction.emoji.name) && user.id === command.id;
+        };
+        
+        waitForReactions(filter, message, options, command, roleList);
+    });
+}
+
+function waitForReactions(filter, message, options, member, roleList) {
+
+    message.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+    .then(collected => {
+        const reaction = collected.first();
+        if (reaction.emoji.name === options[0]) {
+            member.addRole(roleList[0]);
+            console.log("User: " + member.id + " has role " +  roleList[0]);
+            message.reply('Tu rol es: Gamer. Diviértete!');
+        } else if (reaction.emoji.name === options[1]) {
+            member.addRole(roleList[0]);
+            member.addRole(roleList[1]);
+            console.log("User: " + member.id + " has role " +  roleList[0] + " and " + roleList[1]);
+            message.reply('Tus roles son: Gamer y Developer. Diviértete!');
+        }
+    })
+    .catch(collected => {
+        message.reply('Cómo pasa el tiempo! Si quieres solicitar tus permisos adicionales puedes volver a pedírmelos en el canal de texto #info escribiendo ```!permisos```');
+    });
+}
 
 // Entry point for every command (Preceded by "!")
 discord.command = function(message) {
     
-    const command = this.commands[message.content.substring(1)];
+    const command = commands[message.content.substring(1)];
     if (command) {
         command(message);
     }
@@ -76,10 +126,10 @@ discord.command = function(message) {
 const commands =
 {
     ping: function (message) {
-        this.ping(message);
+        ping(message);
     },
     pong: function (message) {
-        this.pong(message);
+        pong(message);
     },
     help: function (message) {
         help(message);
@@ -90,11 +140,11 @@ const commands =
     testAttachment: function (message) {
         testAttachment(message);
     },
-    testAttachmentWithComment: function (directive) {
+    testAttachmentWithComment: function (message) {
         testAttachmentWithComment(message);
     },
-    test: function (directive) {
-        this.test()
+    test: function (message) {
+        test(message)
     }
 }
 
@@ -126,7 +176,6 @@ function getUrlAvatar(command) {
     command.reply(command.author.avatarURL);
     
 }
-
 
 // https://discord.js.org/#/docs/main/stable/examples/attachments
 // Send Attachments
@@ -167,15 +216,16 @@ function testAttachmentFromBuffer(command) {
     command.channel.send(`${command.author}, here are your memes!`, attachment);
 }
 
+const helpList = "Commands:\n !ping\n !pong\n !urlAvatar\n !testAttachment\n !testAttachmentWithComment\n !help\n";
+
 function help(command){
 
     command.channel.send(helpList);
 }
 
-function test(){
-    //console.log(guild.channels.find(ch => ch.name === 'murian-cave'));
-    //console.log(client.guilds.get('119087736773804032').channels);
-    botChannel.send("Tasty");
+function test(command){
+
+
 }
 
 module.exports = discord;

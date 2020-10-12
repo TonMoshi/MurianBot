@@ -5,7 +5,7 @@ var discord = require('../controller/discord.js');
 
 // Home page route.
 router.get('/', function (req, res) {
-  res.send('Wiki home page');
+  res.send('Home page');
 })
 
 // Get Damages page route.
